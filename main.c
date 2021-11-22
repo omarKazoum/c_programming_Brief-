@@ -4,23 +4,13 @@
 #include<string.h>
 #include<stdlib.h>
 #include<conio.h>
-//fonction utilisées
-void fakeData();
-void printDataSoFar();
-void afficheLeMenuPricipale();
-void introduireUnCompte();
-void lireOption();
-void introduirePlusieurComptes();
-void header();
-void clearScreen();
-enum Choix prendreChoix();
-void entrezqqChosePourOvrirMenuPrincipale();
-//constants
+//constants et variables
 enum Choix{OUI,NON};
+enum OperationSurCompte{DEPOT=0,RETRAIT=1};
 #define MAX_NUMBER_OF_ACCOUNTS 1000
 typedef struct Compte Compte ;
 //variables globals
-struct Co mpte
+struct Compte
 {
 	int id;
 	double sold;
@@ -33,11 +23,27 @@ int open_accounts_count=0;
 int optionChoisis;
 struct Compte comptes[MAX_NUMBER_OF_ACCOUNTS];
 
+//fonction utilisées
+void fakeData();
+void printDataSoFar();
+void afficheLeMenuPricipale();
+void introduireUnCompte();
+void lireOption();
+void introduirePlusieurComptes();
+void header();
+void clearScreen();
+enum Choix prendreChoix();
+void entrezqqChosePourOvrirMenuPrincipale();
+void afficherMenuOperations();
+void afficherMenuOperationDepotRetrait(int op);
+void demmanderLechoix();
+int choisirUnComptePourOperation();
+Compte* chercherComptesParCin(char cin[]);//recherche les comptes ayant le cin donné
 ///////////////////////:start of main function
 int main(){
 	fakeData();
-	afficheLeMenuPricipale();
-	//printDataSoFar();
+	//afficheLeMenuPricipale();
+	printDataSoFar();
 	return 0;
 }
 ///////////////////////////end of main function
@@ -82,32 +88,34 @@ void afficheLeMenuPricipale(){
 	lireOption();
 
 	switch(optionChoisis){
-		case 1:
+		case 1://créer un seul compte
 			clearScreen();
 			header();
 			introduireUnCompte(); 
 			entrezqqChosePourOvrirMenuPrincipale();
 			afficheLeMenuPricipale();
 		;break;
-		case 2:
+		case 2://créer plusieurs comptes
 			clearScreen();
 			introduirePlusieurComptes();
 			afficheLeMenuPricipale();
 		;break;
-		case 3:
+		case 3://effectuer une operation sur un compte (depot/retrait)
+			clearScreen();
+			header();
+			afficherMenuOperations();
+		;break;
+		case 4://Affichage des 
 		
 		;break;
-		case 4:
+		case 5://Fidelisation
 		
 		;break;
-		case 5:
+		case 6://Quitter l'application
 		
 		;break;
-		case 6:
-		
-		;break;
-		default:
-		afficheLeMenuPricipale();
+		default:// si l'utlisateur entre un choix qui n'est pas difinie le menu principale va se reafficher
+			afficheLeMenuPricipale();
 	}
 
 }
@@ -136,6 +144,7 @@ void introduireUnCompte(){
 				
 			break;
 			case NON:
+			//ne rien faire
 			break;
 			default:
 			sortir=false;
@@ -182,6 +191,65 @@ void lireOption(){
 	scanf("%d",&optionChoisis);
 	fflush(stdin);
 }
+void afficherMenuOperations(){
+	printf("\n1 > Retrait");
+	printf("\n2 > Depot");
+	printf("\n3 > Menu principale");
+	CHOISIR_OPERATION:
+	demmanderLechoix();
+	lireOption();
+	switch(optionChoisis){
+		case 1:
+			clearScreen();
+			header();
+			afficherMenuOperationDepotRetrait(RETRAIT);
+		break;
+		case 2:
+			clearScreen();
+			header();
+			afficherMenuOperationDepotRetrait(DEPOT);
+		break;
+		case 3:
+			afficheLeMenuPricipale();
+		break;
+		default:
+			goto CHOISIR_OPERATION;
+	}
+
+}
+void afficherMenuOperationDepotRetrait(int op){
+	//TODO:: costumize depending on the type of the operation
+	int nbrCompteATraiter=choisirUnComptePourOperation();
+}
+int choisirUnComptePourOperation(){
+	printf("\npour effectuer un operation il faut d'abord choisir un compte svp entrez votre cin");
+	char cin[20];
+	scanf("%s",cin);
+	//TODO:: continue this find the equivalent accoounts with cin
+}
+Compte* chercherComptesParCin(char cin[]){
+	//maintenet on doit savoir le nombre des comptes ayant ce CIN
+	int count=0;
+	for(int i=0;i<open_accounts_count;i++){
+		if(strcmp(comptes[i].cin,cin)==0)
+			count++;
+	}
+
+	static Compte foundAccounts[count];
+	int insertingIndex=0;
+	for(int i=0;i<open_accounts_count;i++){
+		if(strcmp(comptes[i].cin,cin)==0){
+			foundAccounts[insertingIndex++]=comptes[i];
+		}
+	}
+	return foundAccounts;
+
+}
+
+void demmanderLechoix(){
+	printf("\nentrez le nombre correspondant a votre choix puis tapez entrer ");
+}
+
 void header(){
 	printf("\n-------------------------Bonjour Dans La Bank Du Maroc------------------------------\n");
 }
