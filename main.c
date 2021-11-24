@@ -57,37 +57,40 @@ void retournerLeComptesAyantLeSoldSuperieurA(struct Compte comptesAUtliser[],int
 void afficherMenuFedelisation();
 ///////////////////////:start of main function
 int main(){
-	fakeData();
 	//loadData();
-	//afficheLeMenuPricipale();
-	//saveData();
 	//printDataSoFar();
 	//getch();
+	fakeData();
+	afficheLeMenuPricipale();
+	//saveData();
 	return 0;
 }
 ///////////////////////////end of main function
 void loadData(){
 	 //store the count of elemnts
 	 FILE* fileCP;
-	if(fileCP=fopen(".d","r")){
+	if(fileCP=fopen("count.db","r")){
 		fread(&open_accounts_count,sizeof(int),1,fileCP);
 	}else{
 		open_accounts_count=0;
 	}
 	fclose(fileCP);
-
-	FILE* fileP=fopen("data.db","r");
-	fread(&comptes,sizeof(Compte),MAX_NUMBER_OF_ACCOUNTS,fileP);
-	fclose(fileP);
+	FILE* fileP;
+	if(fileP=fopen("data.db","r")){;
+		int size=fread(comptes,sizeof(struct Compte),open_accounts_count,fileP);
+		printf("data read from data.db %d bytes",size);
+		fclose(fileP);
+		}
 };
 void saveData(){
 	//store the count of elemnts
-	FILE* fileCP=fopen(".d","w");
+	FILE* fileCP=fopen("count.db","w");
 	fwrite(&open_accounts_count,sizeof(int),1,fileCP);
 	fclose(fileCP);
 
 	FILE* fileP=fopen("data.db","w");
-	fwrite(&comptes,sizeof(Compte),MAX_NUMBER_OF_ACCOUNTS,fileP);
+	int size=fwrite(comptes,sizeof(struct Compte),open_accounts_count,fileP);
+	printf("data write in data.db %d bytes",size);
 	fclose(fileP);
 };
 
@@ -112,7 +115,6 @@ void printDataSoFar(){
 			i,comptes[i].id,comptes[i].nomProprietaire,comptes[i].prenomProprietaire,comptes[i].cin,comptes[i].sold);
 	}
 	printf("\n-----------------------------------------------------");
-	system("cls");
 }
 
 void insertAccount(struct Compte c,int position){
@@ -137,12 +139,11 @@ void afficheLeMenuPricipale(){
 			header();
 			introduireUnCompte(); 
 			entrezqqChosePourOvrirMenuPrincipale();
-			afficheLeMenuPricipale();
 		;break;
 		case 2://créer plusieurs comptes
 			clearScreen();
 			introduirePlusieurComptes();
-			afficheLeMenuPricipale();
+			entrezqqChosePourOvrirMenuPrincipale();
 		;break;
 		case 3://effectuer une operation sur un compte (depot/retrait)
 			clearScreen();
@@ -161,15 +162,13 @@ void afficheLeMenuPricipale(){
 		;break;
 		case 6://Quitter l'application
 				printf("\nenregistrement encore ...");
-				saveData();
+				//saveData();
 				printf("Au Revoir !");
 		;break;
 		default:// si l'utlisateur entre un choix qui n'est pas difinie le menu principale va se reafficher
 			afficheLeMenuPricipale();
 	}
-
 }
-
 void afficherMenuFedelisation(){
 	printf("\nFedelasation\n");
 	printf("\ncette option vous permet de ajouter 1.3%% aux 3 comptes ayant le plus grand balance\n");
@@ -192,7 +191,7 @@ void afficherMenuFedelisation(){
 	}
 	printf("\n--------------------------------------------------------------------------------------------\n");
 	// now lets take user input to chouse which user acount to work on
-	printf("\netes vous sure de vouloir ajouter 1.3%% au sold de ces comptes?");
+	printf("\netes vous sur de vouloir ajouter 1.3%% au sold de ces comptes?");
 	enum Choix cho=prendreChoix();
 	if(cho==OUI){
 		// on va fedeliser ces comptes
@@ -200,9 +199,9 @@ void afficherMenuFedelisation(){
 			// check if the changes actually affect the original table the global one	
 			for(int j=0;j<open_accounts_count;j++){
 				if(comptes[j].id==comptesDisponibleAtrier[i].id){
-					comptes[j].sold+=comptes[j].sold*(1.3/100);
-					printf("\n=>fedelisation de compte avec nbr %d",comptes[j].id);
-
+					comptes[j].sold+=comptes[j].sold*0.013;
+					printf("\n=>fedelisation de compte avec nbr #%d",comptes[j].id);
+					printf("\n=>sold apres fedilisation Du compte #%d est %fDH",comptes[j].id,comptes[j].sold);
 				}
 			}
 		}
@@ -233,6 +232,7 @@ void introduireUnCompte(){
 			case OUI:
 				comptes[open_accounts_count-1]=c;
 				open_accounts_count++;
+				printf("Compte N #%d  est bien cree !",c.id);
 			break;
 			case NON:
 			//ne rien faire
@@ -266,7 +266,7 @@ void introduirePlusieurComptes(){
 }
 enum Choix prendreChoix(){
 	while(true){
-	printf("\nEntrez 1 pour Oui ou 2 pour Non");
+	printf("\nEntrez 1 pour Oui ou 2 pour Non  ");
 	lireOption();
 		if(optionChoisis==1){
 			return OUI;
@@ -345,7 +345,7 @@ float lireMontanatDeLUtilisateur(int op){
 	return montant;
 };
 int choisirUnComptePourOperation(){
-	printf("\npour effectuer un operation il faut d'abord choisir un compte svp entrez votre cin");
+	printf("\nPour effectuer une operation il faut d'abord choisir un compte svp entrez votre cin  ");
 	char cin[20];
 	scanf("%s",cin);
 	Compte comptesTrouves[MAX_ACCOUNST_NUMBER_PER_CIN];
@@ -367,8 +367,8 @@ int choisirUnComptePourOperation(){
 			goto CHOISIR_UN_COMPTE;
 		}
 	}else{
-		printf("le client avec le CIN:%s ne dispose pas de compte\n",cin);
-		return -1;
+			printf("\nLe client avec le cin:%s ne dispose pas de compte!\n",cin);
+			return -1;
 	}
 
 
@@ -402,12 +402,12 @@ void afficherMenuAffichage(){
 	printf("\n5>Recherche par CIN");
 	printf("\n6>Retour au menu principale");
 	// on prend les comptes valabale on les met dans une table puis les trie par montant asendant
-	//FORTESTING
-	printf("\nopen accounts%d and the first one has cin %s",open_accounts_count,comptes[0].cin);
 	struct Compte comptesDisponibleAtrier[open_accounts_count];
 		for(int i=0;i<open_accounts_count;i++){
 			comptesDisponibleAtrier[i]=comptes[i];
 		};
+		//FOR_TESTING
+		printf("\ncompte existant %d cin du premier %s",open_accounts_count,comptesDisponibleAtrier[0].cin);
 	
 	MENU_AFFICHAGE_DEMANDER_CHOIX:
 	printf("\nVotreChoix: ");
@@ -490,26 +490,25 @@ void afficherDesComptes(struct Compte comptesATraiter[],int length){
 		printf("\nentrez 0 pour revenir au menu principale");
 		demmanderLechoix();
 		lireOption();
-	}while(optionChoisis<1 || optionChoisis>length);
+	}while(optionChoisis<0 || optionChoisis>length);
+
 	if(optionChoisis==0){
 		afficheLeMenuPricipale();
-		return;
 	}else{
 		afficherUnCompte(comptesATraiter[optionChoisis-1]);
 		//pause the programm
 		entrezqqChosePourOvrirMenuPrincipale();
-		afficheLeMenuPricipale();
 	}
 }
 void afficherUnCompte(struct Compte compteAAfficher){
 	printf("\n--------------------------------------------------------------------------------------------");
 	printf("\n                      Affichage du compte N:#%d                         ",compteAAfficher.id);
 	printf("\n--------------------------------------------------------------------------------------------");
-	printf("\nNumero Du Compte:				  %d",compteAAfficher.id);
-	printf("\nNom Du Proprietaire:			  %s",compteAAfficher.nomProprietaire);
-	printf("\nPrenom Du Proprietaire: 		  %s",compteAAfficher.prenomProprietaire);
-	printf("\nNumero De La Carte Nationale:	  %s",compteAAfficher.cin);
-	printf("\nMontant Disponible:			  %f",compteAAfficher.sold);
+	printf("\nNumero Du Compte:               %d",compteAAfficher.id);
+	printf("\nNom Du Proprietaire:            %s",compteAAfficher.nomProprietaire);
+	printf("\nPrenom Du Proprietaire:         %s",compteAAfficher.prenomProprietaire);
+	printf("\nNumero De La Carte Nationale:   %s",compteAAfficher.cin);
+	printf("\nMontant Disponible:             %f",compteAAfficher.sold);
 	printf("\n--------------------------------------------------------------------------------------------");
 }
 void trierLesComptesParSold(struct Compte comptesATrier[],int length,int order){
@@ -547,5 +546,4 @@ float lireNombreAFIltrerLesComptes(){
 	float filter;
 	scanf("%f",&filter);
 	return filter;
-
 };
