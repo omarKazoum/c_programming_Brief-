@@ -25,10 +25,11 @@ struct Compte comptes[MAX_NUMBER_OF_ACCOUNTS];
 #define MAX_ACCOUNST_NUMBER_PER_CIN 10 
 int nbrDesComptesTrouvesApresRecheche=-1;
 int idCompteChoisis=-1;
-//fonction utilisées
-void fakeData();
+//functions non utilisés (en cours de developpment)
 void loadData();
 void saveData();
+//fonction utilisées
+void fakeData();
 void printDataSoFar();
 void afficheLeMenuPricipale();
 void introduireUnCompte();
@@ -66,6 +67,7 @@ int main(){
 	return 0;
 }
 ///////////////////////////end of main function
+
 void loadData(){
 	 //store the count of elemnts
 	 FILE* fileCP;
